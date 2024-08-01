@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace App.Migrations
 {
-    [DbContext(typeof(AppIdentityDbContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20240731202606_CreateIdentitySchema")]
     partial class CreateIdentitySchema
     {

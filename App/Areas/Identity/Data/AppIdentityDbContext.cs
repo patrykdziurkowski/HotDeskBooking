@@ -3,13 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace App.Areas.Identity.Data;
 
-public class AppIdentityDbContext : IdentityDbContext<Employee>
+public class ApplicationDbContext : IdentityDbContext<Employee>
 {
-    public AppIdentityDbContext(DbContextOptions<AppIdentityDbContext> options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
-    
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

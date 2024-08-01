@@ -8,12 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration["ConnectionString"] ?? throw new InvalidOperationException("Connection string not found.");
 
 builder.Services
-    .AddDbContext<AppIdentityDbContext>(options =>
+    .AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(connectionString));
 
 builder.Services
     .AddDefaultIdentity<Employee>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<AppIdentityDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<RazorViewEngineOptions>(o => {
@@ -41,8 +41,8 @@ else
 {
      using IServiceScope scope = app.Services
         .GetRequiredService<IServiceScopeFactory>().CreateScope();
-    AppIdentityDbContext context = scope.ServiceProvider.GetService<AppIdentityDbContext>()
-        ?? throw new ApplicationException("AppIdentityDbContext was not found in the dependency injection container.");
+    ApplicationDbContext context = scope.ServiceProvider.GetService<ApplicationDbContext>()
+        ?? throw new ApplicationException("ApplicationDbContext was not found in the dependency injection container.");
     context.Database.Migrate();
 }
 
