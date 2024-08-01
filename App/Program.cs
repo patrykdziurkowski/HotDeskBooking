@@ -2,14 +2,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using App.Areas.Identity.Data;
 using Microsoft.AspNetCore.Mvc.Razor;
+using App;
+
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration["ConnectionString"] ?? throw new InvalidOperationException("Connection string not found.");
 
-builder.Services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services
+    .AddDbContext<AppIdentityDbContext>(options =>
+        options.UseSqlServer(connectionString));
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<AppIdentityDbContext>();
+builder.Services
+    .AddDefaultIdentity<Employee>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<AppIdentityDbContext>();
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<RazorViewEngineOptions>(o => {
     /*
