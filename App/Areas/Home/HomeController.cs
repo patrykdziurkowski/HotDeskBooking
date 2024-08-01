@@ -1,8 +1,8 @@
 using System.Diagnostics;
+using App.Areas.Shared;
 using Microsoft.AspNetCore.Mvc;
-using App.Models;
 
-namespace App.Controllers;
+namespace App.Areas.Home;
 
 public class HomeController : Controller
 {

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using App.Areas.Identity.Data;
+using Microsoft.AspNetCore.Mvc.Razor;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration["ConnectionString"] ?? throw new InvalidOperationException("Connection string not found.");
 
@@ -10,6 +11,17 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<RazorViewEngineOptions>(o => {
+    /*
+        {2} - area name
+        {1} - controller name
+        {0} - action name
+    */
+    o.ViewLocationFormats.Add("/Areas/{2}/{0}.cshtml");
+    o.ViewLocationFormats.Add("/Areas/{2}/{1}/{0}.cshtml");
+    o.ViewLocationFormats.Add("/Areas/Shared/{0}.cshtml");
+});
+
 
 var app = builder.Build();
 

@@ -1,4 +1,4 @@
-namespace App.Models;
+namespace App.Areas.Shared;
 
 public class ErrorViewModel
 {
