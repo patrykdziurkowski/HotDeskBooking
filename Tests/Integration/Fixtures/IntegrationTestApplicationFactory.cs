@@ -34,7 +34,7 @@ public class IntegrationTestApplicationFactory : WebApplicationFactory<Program>,
             .DeleteIfExists(force: true)
             .UseImage("hotdesk_integrationtestdb")
             .WithName("hotdesk_integrationtestdb")
-            .ExposePort(14331,1433)
+            .ExposePort(14332,1433)
             .WaitForHealthy()
             .Build();
     }
