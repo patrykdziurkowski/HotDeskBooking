@@ -41,7 +41,12 @@ public class LocationRepositoryTests : IAsyncLifetime
 
         await _locationRepository.SaveAsync(location);
 
-        (await _locationRepository.GetAsync()).Should().HaveCount(1);
+        List<Location> locations = await _locationRepository.GetAsync();
+        locations.Should().HaveCount(1);
+        locations.First().Id.Should().NotBe(Guid.Empty);
+        locations.First().BuildingNumber.Should().Be(1);
+        locations.First().Floor.Should().Be(2);
+        locations.First().Desks.Should().HaveCount(0);
     }
 
     [Fact]
