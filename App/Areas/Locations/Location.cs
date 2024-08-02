@@ -37,7 +37,7 @@ public class Location : AggreggateRoot
     }
 
     // EF
-    private Location()
+    public Location()
     {
         Id = default!;
         BuildingNumber = default!;

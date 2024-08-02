@@ -4,6 +4,7 @@ namespace App;
 
 public interface ILocationRepository
 {
-    public List<Location> Get();
-    public Task Save(Location location);
+    public Task<List<Location>> GetAsync();
+    public Task<Location?> GetByIdAsync(Guid id);
+    public Task SaveAsync(Location location);
 }

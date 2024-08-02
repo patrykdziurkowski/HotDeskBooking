@@ -1,5 +1,6 @@
 ﻿using App.Areas.Identity.Data;
 using App.Areas.Locations;
+using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Core.Types;
 
 namespace App;
@@ -13,12 +14,17 @@ public class LocationRepository : ILocationRepository
         _context = context;
     }
 
-    public List<Location> Get()
+    public async Task<List<Location>> GetAsync()
     {
-        return _context.Locations.ToList();
+        return await _context.Locations.ToListAsync();
     }
 
-    public async Task Save(Location location)
+    public async Task<Location?> GetByIdAsync(Guid id)
+    {
+        return await _context.Locations.FirstOrDefaultAsync(l => l.Id == id);
+    }
+
+    public async Task SaveAsync(Location location)
     {
         foreach (DomainEvent e in location.DomainEvents)
         {

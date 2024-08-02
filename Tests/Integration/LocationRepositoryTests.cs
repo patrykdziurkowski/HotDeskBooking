@@ -27,7 +27,7 @@ public class LocationRepositoryTests : IAsyncLifetime
         Location location = new(1, 2);
         int domainEventCountBefore = location.DomainEvents.Count();
 
-        await _locationRepository.Save(location);
+        await _locationRepository.SaveAsync(location);
         int domainEventCountAfter = location.DomainEvents.Count();
 
         domainEventCountBefore.Should().Be(1);
@@ -39,9 +39,9 @@ public class LocationRepositoryTests : IAsyncLifetime
     {
         Location location = new(1, 2);
 
-        await _locationRepository.Save(location);
+        await _locationRepository.SaveAsync(location);
 
-        _locationRepository.Get().Should().HaveCount(1);
+        (await _locationRepository.GetAsync()).Should().HaveCount(1);
     }
 
     [Fact]
@@ -50,9 +50,9 @@ public class LocationRepositoryTests : IAsyncLifetime
         Location location = new(1, 2);
         location.Remove();
 
-        await _locationRepository.Save(location);
+        await _locationRepository.SaveAsync(location);
 
-        _locationRepository.Get().Should().HaveCount(0);
+        (await _locationRepository.GetAsync()).Should().HaveCount(0);
     }
 
     public async Task InitializeAsync()
