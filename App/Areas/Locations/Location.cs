@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using Microsoft.IdentityModel.Tokens;
 
-namespace App.Areas.Location;
+namespace App.Areas.Locations;
 
 public class Location : AggreggateRoot
 {
@@ -34,6 +34,15 @@ public class Location : AggreggateRoot
             []
         )
     {
+    }
+
+    // EF
+    private Location()
+    {
+        Id = default!;
+        BuildingNumber = default!;
+        Floor = default!;
+        _desks = [];
     }
 
     public Result Remove()

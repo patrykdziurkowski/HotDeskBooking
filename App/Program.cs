@@ -5,13 +5,14 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using App;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+
 var connectionString = builder.Configuration["ConnectionString"]
     ?? throw new InvalidOperationException("Connection string not found.");
-
 builder.Services
     .AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(connectionString));
-
 builder.Services
     .AddDefaultIdentity<Employee>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();

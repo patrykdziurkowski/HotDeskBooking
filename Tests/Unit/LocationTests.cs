@@ -1,4 +1,4 @@
-﻿using App.Areas.Location;
+﻿using App.Areas.Locations;
 using FluentAssertions;
 using FluentResults;
 
