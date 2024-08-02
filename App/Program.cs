@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using App;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration["ConnectionString"] ?? throw new InvalidOperationException("Connection string not found.");
+var connectionString = builder.Configuration["ConnectionString"]
+    ?? throw new InvalidOperationException("Connection string not found.");
 
 builder.Services
     .AddDbContext<ApplicationDbContext>(options =>
@@ -58,3 +59,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 app.Run();
+
+public partial class Program { }
