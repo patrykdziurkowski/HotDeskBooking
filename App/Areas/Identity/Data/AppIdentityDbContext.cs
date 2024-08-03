@@ -22,8 +22,15 @@ public class ApplicationDbContext : IdentityDbContext<Employee>
 
         builder.Ignore<AggreggateRoot>();
         builder.Ignore<DomainEvent>();
-        
-        builder.Entity<Location>()
-            .HasKey(l => l.Id);
+        builder.Entity<Location>(location =>
+        {
+            location.HasKey(l => l.Id);
+            location
+                .Property(l => l.BuildingNumber)
+                .IsRequired();
+            location
+                .Property(l => l.Floor)
+                .IsRequired();
+        });
     }
 }

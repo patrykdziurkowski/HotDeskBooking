@@ -32,9 +32,7 @@ public class Location : AggreggateRoot
             buildingNumber,
             floor,
             []
-        )
-    {
-    }
+        ){ }
 
     // EF
     public Location()
