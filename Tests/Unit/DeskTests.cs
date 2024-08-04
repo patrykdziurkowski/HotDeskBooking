@@ -68,6 +68,19 @@ public class DeskTests
     }
 
     [Fact]
+    public void IsAvailable_ShouldReturnTrue_WhenPreviousReservationExpired()
+    {
+        Desk desk = new(Guid.NewGuid());
+        DateOnly firstReservationDate = new(2018, 6, 13);
+        DateOnly firstReservationStartDate = new(2018, 6, 20);
+        DateOnly currentDate = new(2018, 6, 21);
+
+        desk.Reserve(firstReservationStartDate, firstReservationDate);
+
+        desk.IsAvailable(currentDate).Should().BeTrue();
+    }
+
+    [Fact]
     public void Reserve_ShouldRaiseDomainEvent_WhenDeskBooked()
     {
         Desk desk = new(Guid.NewGuid());
@@ -142,19 +155,6 @@ public class DeskTests
     }
 
     [Fact]
-    public void IsAvailable_ShouldReturnTrue_WhenPreviousReservationExpired()
-    {
-        Desk desk = new(Guid.NewGuid());
-        DateOnly firstReservationDate = new(2018, 6, 13);
-        DateOnly firstReservationStartDate = new(2018, 6, 20);
-        DateOnly currentDate = new(2018, 6, 21);
-
-        desk.Reserve(firstReservationStartDate, firstReservationDate);
-
-        desk.IsAvailable(currentDate).Should().BeTrue();
-    }
-
-    [Fact]
     public void Reserve_ShouldReturnFail_WhenMakingReservationForThePast()
     {
         Desk desk = new(Guid.NewGuid());
@@ -180,5 +180,31 @@ public class DeskTests
         Result result = desk.Reserve(secondReservationStartDate, secondReservationDate);
 
         result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Remove_ShouldReturnFail_WhenDeskHasNonExpiredReservation()
+    {
+        Desk desk = new(Guid.NewGuid());
+        DateOnly currentDate = new(2018, 6, 13);
+        DateOnly startDate = new(2018, 6, 20);
+        desk.Reserve(startDate, currentDate);
+
+        Result result = desk.Remove(currentDate);
+
+        result.IsFailed.Should().BeTrue();
+        desk.DomainEvents.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void Remove_ShouldRaiseDomainEvent_WhenDeskRemoved()
+    {
+        Desk desk = new(Guid.NewGuid());
+        DateOnly currentDate = new(2018, 6, 13);
+
+        Result result = desk.Remove(currentDate);
+
+        result.IsSuccess.Should().BeTrue();
+        desk.DomainEvents.Should().HaveCount(2);
     }
 }

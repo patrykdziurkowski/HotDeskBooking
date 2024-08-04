@@ -74,7 +74,7 @@ public class Desk : AggreggateRoot
             return Result.Fail("Cannot book a desk for more than a week.");
         }
 
-        if (Reservation is not null && currentDate < Reservation.EndDate)
+        if (HasPendingReservation(currentDate))
         {
             return Result.Fail("The chosen desk has already been booked.");
         }
@@ -86,5 +86,21 @@ public class Desk : AggreggateRoot
     public Result Reserve(DateOnly startDate, DateOnly currentDate)
     {
         return Reserve(startDate, startDate, currentDate);
+    }
+
+    public Result Remove(DateOnly currentDate)
+    {
+        if (HasPendingReservation(currentDate))
+        {
+            return Result.Fail("Cannot remove a desk that has a pending reservation.");
+        }
+        
+        RaiseDomainEvent(new DeskRemovedEvent());
+        return Result.Ok();
+    }
+
+    private bool HasPendingReservation(DateOnly currentDate)
+    {
+        return (Reservation is not null) && (currentDate < Reservation.EndDate);
     }
 }
