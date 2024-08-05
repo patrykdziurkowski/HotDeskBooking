@@ -70,7 +70,7 @@ public class DeskController : Controller
         Result result = desk.Remove(DateOnly.FromDateTime(DateTime.Now));
         if (result.IsFailed)
         {
-            return StatusCode(401, result.Errors.First().Message);
+            return StatusCode(403, result.Errors.First().Message);
         }
 
         await _deskRepository.SaveAsync(desk);
