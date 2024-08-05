@@ -4,6 +4,7 @@ using App.Areas.Identity.Data;
 using Microsoft.AspNetCore.Mvc.Razor;
 using App;
 using App.Areas.DesksReservations;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,7 @@ builder.Services
     .AddDefaultIdentity<Employee>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(o => o.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>());
 builder.Services.Configure<RazorViewEngineOptions>(o => {
     /*
         {2} - area name
