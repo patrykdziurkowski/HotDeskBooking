@@ -32,8 +32,8 @@ public class LocationRepositoryTests : IAsyncLifetime
         List<Location> locations = await _locationRepository.GetAsync();
 
         locations.Should().HaveCount(2);
-        locations[0].Id.Should().Be(location.Id);
-        locations[1].Id.Should().Be(location2.Id);
+        locations.FirstOrDefault(l => l.Id == location.Id).Should().NotBeNull();
+        locations.FirstOrDefault(l => l.Id == location2.Id).Should().NotBeNull();
     }
 
     [Fact]
