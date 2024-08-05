@@ -88,7 +88,7 @@ public class LocationRepositoryTests : IAsyncLifetime
         locations.First().Id.Should().NotBe(Guid.Empty);
         locations.First().BuildingNumber.Should().Be(1);
         locations.First().Floor.Should().Be(2);
-        locations.First().Desks.Should().HaveCount(0);
+        locations.First().DeskIds.Should().HaveCount(0);
     }
 
     [Fact]

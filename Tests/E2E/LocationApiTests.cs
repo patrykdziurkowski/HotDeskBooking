@@ -79,6 +79,22 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
     }
 
     [Fact, Priority(20)]
+    public async Task DeleteLocation_DoesntRemoveLocation_WhenItHasDesk()
+    {
+        List<LocationDto> locations = await GetLocationsAsync();
+        Guid locationId = locations.Single().Id;
+        await CreateDeskAsync(locationId);
+        string uri = $"http://localhost:8080/Location/{locationId}";
+        
+        HttpResponseMessage response = await _client.DeleteAsync(uri);
+
+        ((int) response.StatusCode).Should().Be(403);
+        List<LocationDto> locationsAfterDeletion = await GetLocationsAsync();
+        locationsAfterDeletion.Should().HaveCount(1);
+                await DeleteDesksAsync(locationId);
+    }
+
+    [Fact, Priority(25)]
     public async Task DeleteLocation_RemovesLocation()
     {
         List<LocationDto> locations = await GetLocationsAsync();
@@ -100,5 +116,32 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
             ?? throw new Exception("Unable to parse the response into List of Location");
  
         return locations;
+    }
+
+    private async Task<List<DeskDto>> GetDesksForLocationAsync(Guid locationId)
+    {
+        string uri = $"http://localhost:8080/Location/{locationId}/Desk";
+        HttpResponseMessage getResponse = await _client.GetAsync(uri);
+        List<DeskDto> desks = await getResponse.Content.ReadFromJsonAsync<List<DeskDto>>()
+            ?? throw new Exception("Unable to parse the response into List of Location");
+ 
+        return desks;
+    }
+
+    private async Task CreateDeskAsync(Guid locationId)
+    {
+        string uri = $"http://localhost:8080/Location/{locationId}/Desk";
+        FormUrlEncodedContent form = new([]);
+        await _client.PostAsync(uri, form);
+    }
+    
+    private async Task DeleteDesksAsync(Guid locationId)
+    {
+        List<DeskDto> desks = await GetDesksForLocationAsync(locationId);
+        foreach(DeskDto desk in desks)
+        {
+            string uri = $"http://localhost:8080/Location/{locationId}/Desk/{desk.Id}";
+            await _client.DeleteAsync(uri);
+        }
     }
 }

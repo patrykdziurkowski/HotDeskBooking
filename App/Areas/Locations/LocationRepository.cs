@@ -16,12 +16,39 @@ public class LocationRepository : ILocationRepository
 
     public async Task<List<Location>> GetAsync()
     {
-        return await _context.Locations.ToListAsync();
+        List<Location> locations = await _context.Locations
+            .Select(l => new Location(
+                l.Id,
+                l.BuildingNumber,
+                l.Floor,
+                _context.Desks
+                    .Where(d => d.LocationId == l.Id)
+                    .Select(d => d.Id)
+                    .ToList()
+            ))
+            .ToListAsync();
+            
+        locations.ForEach(l => l.ClearDomainEvents());
+        return locations;
     }
 
     public async Task<Location?> GetByIdAsync(Guid id)
     {
-        return await _context.Locations.FirstOrDefaultAsync(l => l.Id == id);
+        Location? location = await _context.Locations
+            .Where(l => l.Id == id)
+            .Select(l => new Location(
+                l.Id,
+                l.BuildingNumber,
+                l.Floor,
+                _context.Desks
+                    .Where(d => d.LocationId == l.Id)
+                    .Select(d => d.Id)
+                    .ToList()
+            ))
+            .FirstOrDefaultAsync();
+
+        location?.ClearDomainEvents();
+        return location;
     }
 
     public async Task SaveAsync(Location location)

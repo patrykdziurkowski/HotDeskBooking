@@ -16,7 +16,7 @@ public class LocationDto
             Id = location.Id,
             BuildingNumber = location.BuildingNumber,
             Floor = location.Floor,
-            Desks = location.Desks.ToList()
+            Desks = location.DeskIds.ToList()
         };
     }
 }

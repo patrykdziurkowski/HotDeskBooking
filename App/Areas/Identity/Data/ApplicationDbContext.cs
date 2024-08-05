@@ -44,6 +44,7 @@ public class ApplicationDbContext : IdentityDbContext<Employee>
             desk.HasOne<Location>()
                 .WithMany()
                 .HasForeignKey(d => d.LocationId)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
             desk.HasOne(d => d.Reservation)

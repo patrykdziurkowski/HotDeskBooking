@@ -9,8 +9,8 @@ public class Location : AggreggateRoot
     public int BuildingNumber { get; }
     public int Floor { get; }
 
-    public IEnumerable<Guid> Desks => _desks;
-    private List<Guid> _desks;
+    public IEnumerable<Guid> DeskIds => _deskIds;
+    private List<Guid> _deskIds;
 
     public Location(
         Guid id,
@@ -22,7 +22,7 @@ public class Location : AggreggateRoot
         Id = id;
         BuildingNumber = buildingNumber;
         Floor = floor;
-        _desks = desks;
+        _deskIds = desks;
         RaiseDomainEvent(new LocationCreatedEvent());
     }
 
@@ -40,12 +40,12 @@ public class Location : AggreggateRoot
         Id = default!;
         BuildingNumber = default!;
         Floor = default!;
-        _desks = [];
+        _deskIds = [];
     }
 
     public Result Remove()
     {
-        if (_desks.IsNullOrEmpty() == false)
+        if (_deskIds.IsNullOrEmpty() == false)
         {
             return Result.Fail("In order to be removed, this location musn't contain any desks.");
         }
