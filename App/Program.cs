@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using App.Areas.Identity.Data;
 using Microsoft.AspNetCore.Mvc.Razor;
 using App;
+using App.Areas.DesksReservations;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<IDeskRepository, DeskRepository>();
 
 var connectionString = builder.Configuration["ConnectionString"]
     ?? throw new InvalidOperationException("Connection string not found.");
