@@ -1,4 +1,5 @@
 ﻿using App.Areas.Locations;
+using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace App;
@@ -35,8 +36,70 @@ public class DeskController : Controller
     [Route("/Location/{locationId}/Desk")]
     public async Task<IActionResult> Create(Guid locationId)
     {
+        Location? location = await _locationRepository.GetByIdAsync(locationId);
+        if (location is null)
+        {
+            return NotFound();
+        }
+
         Desk desk = new(locationId);
         await _deskRepository.SaveAsync(desk);
         return StatusCode(201);
+    }
+
+    [HttpDelete]
+    [Route("/Location/{locationId}/Desk/{deskId}")]
+    public async Task<IActionResult> Remove(
+        Guid locationId,
+        Guid deskId
+    )
+    {
+        Location? location = await _locationRepository.GetByIdAsync(locationId);
+        if (location is null)
+        {
+            return NotFound();
+        }
+
+        Desk? desk = (await _deskRepository.GetByLocationAsync(locationId))
+            .FirstOrDefault(d => d.Id == deskId);
+        if (desk is null)
+        {
+            return NotFound();
+        }
+
+        Result result = desk.Remove(DateOnly.FromDateTime(DateTime.Now));
+        if (result.IsFailed)
+        {
+            return StatusCode(401, result.Errors.First().Message);
+        }
+
+        await _deskRepository.SaveAsync(desk);
+        return Ok();
+    }
+
+    [HttpPatch]
+    [Route("/Location/{locationId}/Desk/{deskId}")]
+    public async Task<IActionResult> MakeUnavailable(
+        Guid locationId,
+        Guid deskId,
+        bool isMadeUnavailable)
+    {
+        Location? location = await _locationRepository.GetByIdAsync(locationId);
+        if (location is null)
+        {
+            return NotFound();
+        }
+
+        Desk? desk = (await _deskRepository.GetByLocationAsync(locationId))
+            .FirstOrDefault(d => d.Id == deskId);
+        if (desk is null)
+        {
+            return NotFound();
+        }
+        
+        desk.IsMadeUnavailable = isMadeUnavailable;
+        await _deskRepository.SaveAsync(desk);
+        return Ok();
+        
     }
 }

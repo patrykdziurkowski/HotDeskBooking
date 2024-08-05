@@ -8,25 +8,25 @@ namespace Tests;
 
 [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
 [Collection("WebServerTests")]
-public class DeskApiTests : IClassFixture<WebServerHostService>, IClassFixture<SharedLocationId>
+public class DeskApiTests : IClassFixture<WebServerHostService>, IClassFixture<DeskApiTestsShared>
 {
     private static readonly HttpClient _client = new(new HttpClientHandler() { CookieContainer = new System.Net.CookieContainer() });
     private readonly WebServerHostService _hostService;
-    private SharedLocationId _sharedLocationId;
+    private DeskApiTestsShared _shared;
 
     public DeskApiTests(
         WebServerHostService hostService,
-        SharedLocationId sharedLocationId)
+        DeskApiTestsShared sharedLocationId)
     {
         _hostService = hostService;
-        _sharedLocationId = sharedLocationId;
+        _shared = sharedLocationId;
     }
 
     [Fact, Priority(0)]
     public async Task GetDesk_ReturnsOk()
     {
-        _sharedLocationId.LocationId = await CreateLocationAsync();
-        string uri = $"http://localhost:8080/Location/{_sharedLocationId.LocationId}/Desk";
+        _shared.LocationId = await CreateLocationAsync();
+        string uri = $"http://localhost:8080/Location/{_shared.LocationId}/Desk";
         
         HttpResponseMessage response = await _client.GetAsync(uri);
 
@@ -45,25 +45,112 @@ public class DeskApiTests : IClassFixture<WebServerHostService>, IClassFixture<S
     }
 
     [Fact, Priority(10)]
+    public async Task PostDesk_ReturnsNotFound_WhenLocationDoesntExist()
+    {
+        string uri = $"http://localhost:8080/Location/{Guid.NewGuid()}/Desk/";
+        FormUrlEncodedContent form = new([]);
+
+        HttpResponseMessage response = await _client.PostAsync(uri, form);
+
+        ((int) response.StatusCode).Should().Be(404);
+    }
+
+
+    [Fact, Priority(15)]
     public async Task PostDesk_CreatesDesk_WhenPosted()
     {
-        string uri = $"http://localhost:8080/Location/{_sharedLocationId.LocationId}/Desk";
+        string uri = $"http://localhost:8080/Location/{_shared.LocationId}/Desk";
         FormUrlEncodedContent form = new([]);
 
         HttpResponseMessage response = await _client.PostAsync(uri, form);
 
         List<DeskDto> desks = await GetDesksForLocationAsync();
-        desks.Single().LocationId.Should().Be(_sharedLocationId.LocationId!.ToString());
+        desks.Single().LocationId.Should().Be(_shared.LocationId!.ToString());
+        _shared.DeskId = desks.Single().Id;
         ((int) response.StatusCode).Should().Be(201);
     }
 
+
+    [Fact, Priority(20)]
+    public async Task PatchDesk_ReturnsNotFound_WhenLocationDoesntExist()
+    {
+        string uri = $"http://localhost:8080/Location/{Guid.NewGuid()}/Desk/{_shared.DeskId}";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("isMadeUnavailable", "true")
+        ]);
+
+        HttpResponseMessage response = await _client.PatchAsync(uri, form);
+
+        ((int) response.StatusCode).Should().Be(404);
+    }
+
+    [Fact, Priority(20)]
+    public async Task PatchDesk_ReturnsNotFound_WhenDeskDoesntExist()
+    {
+        string uri = $"http://localhost:8080/Location/{_shared.LocationId}/Desk/{Guid.NewGuid()}";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("isMadeUnavailable", "true")
+        ]);
+
+        HttpResponseMessage response = await _client.PatchAsync(uri, form);
+
+        ((int) response.StatusCode).Should().Be(404);
+    }
+
+    [Fact, Priority(25)]
+    public async Task PatchDesk_SwitchesIsMadeUnavailableFlag_WhenSetToTrue()
+    {
+        string uri = $"http://localhost:8080/Location/{_shared.LocationId}/Desk/{_shared.DeskId}";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("isMadeUnavailable", "true")
+        ]);
+
+        HttpResponseMessage response = await _client.PatchAsync(uri, form);
+
+        ((int) response.StatusCode).Should().Be(200);
+        List<DeskDto> desks = await GetDesksForLocationAsync();
+        desks.Single().IsMadeUnavailable.Should().BeTrue();
+    }
+    
+    [Fact, Priority(30)]
+    public async Task DeleteDesk_ReturnsNotFound_WhenLocationDoesntExist()
+    {
+        string uri = $"http://localhost:8080/Location/{Guid.NewGuid()}/Desk/{_shared.DeskId}";
+
+        HttpResponseMessage response = await _client.DeleteAsync(uri);
+
+        ((int) response.StatusCode).Should().Be(404);
+    }
+
+    [Fact, Priority(35)]
+    public async Task DeleteDesk_ReturnsNotFound_WhenDeskDoesntExist()
+    {
+        string uri = $"http://localhost:8080/Location/{_shared.LocationId}/Desk/{Guid.NewGuid()}";
+
+        HttpResponseMessage response = await _client.DeleteAsync(uri);
+
+        ((int) response.StatusCode).Should().Be(404);
+    }
+
+    [Fact, Priority(40)]
+    public async Task DeleteDesk_RemovesDesk_WhenDeleted()
+    {
+        string uri = $"http://localhost:8080/Location/{_shared.LocationId}/Desk/{_shared.DeskId}";
+
+        HttpResponseMessage response = await _client.DeleteAsync(uri);
+
+        ((int) response.StatusCode).Should().Be(200);
+        List<DeskDto> desks = await GetDesksForLocationAsync();
+        desks.Should().BeEmpty();
+        _shared.DeskId = null;
+    }
 
 
 
 
     private async Task<List<DeskDto>> GetDesksForLocationAsync()
     {
-        string uri = $"http://localhost:8080/Location/{_sharedLocationId.LocationId}/Desk";
+        string uri = $"http://localhost:8080/Location/{_shared.LocationId}/Desk";
         HttpResponseMessage getResponse = await _client.GetAsync(uri);
         List<DeskDto> desks = await getResponse.Content.ReadFromJsonAsync<List<DeskDto>>()
             ?? throw new Exception("Unable to parse the response into List of Location");
