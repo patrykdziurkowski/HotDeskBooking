@@ -18,7 +18,7 @@ public class DeskController : Controller
     }
 
     [HttpGet]
-    [Route("/Location/{locationId}/Desk")]
+    [Route("/Locations/{locationId}/Desks")]
     public async Task<IActionResult> GetAll(Guid locationId)
     {
         Location? location = await _locationRepository.GetByIdAsync(locationId);
@@ -33,7 +33,7 @@ public class DeskController : Controller
     }
 
     [HttpPost]
-    [Route("/Location/{locationId}/Desk")]
+    [Route("/Locations/{locationId}/Desks")]
     public async Task<IActionResult> Create(Guid locationId)
     {
         Location? location = await _locationRepository.GetByIdAsync(locationId);
@@ -48,7 +48,7 @@ public class DeskController : Controller
     }
 
     [HttpDelete]
-    [Route("/Location/{locationId}/Desk/{deskId}")]
+    [Route("/Locations/{locationId}/Desks/{deskId}")]
     public async Task<IActionResult> Remove(
         Guid locationId,
         Guid deskId
@@ -78,7 +78,7 @@ public class DeskController : Controller
     }
 
     [HttpPatch]
-    [Route("/Location/{locationId}/Desk/{deskId}")]
+    [Route("/Locations/{locationId}/Desks/{deskId}")]
     public async Task<IActionResult> MakeUnavailable(
         Guid locationId,
         Guid deskId,

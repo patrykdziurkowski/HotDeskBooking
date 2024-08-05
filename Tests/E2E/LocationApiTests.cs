@@ -23,7 +23,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
     [Fact, Priority(0)]
     public async Task GetLocation_ReturnsOk()
     {
-        string uri = "http://localhost:8080/Location";
+        string uri = "http://localhost:8080/Locations";
         
         HttpResponseMessage response = await _client.GetAsync(uri);
 
@@ -33,7 +33,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
     [Fact, Priority(5)]
     public async Task PostLocation_ReturnsBadRequest_WhenFormInvalid()
     {
-        string uri = "http://localhost:8080/Location";
+        string uri = "http://localhost:8080/Locations";
         FormUrlEncodedContent form = new(
         [
             new KeyValuePair<string, string>("BuildingNumber", "-5"),
@@ -48,7 +48,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
     [Fact, Priority(10)]
     public async Task PostLocation_CreatesLocation_WhenFormValid()
     {
-        string uri = "http://localhost:8080/Location";
+        string uri = "http://localhost:8080/Locations";
         FormUrlEncodedContent form = new(
         [
             new KeyValuePair<string, string>("BuildingNumber", "5"),
@@ -71,7 +71,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
     public async Task DeleteLocation_ReturnsNotFound_WhenIdNotFound()
     {
         Guid nonExistantLocationId = Guid.Empty;
-        string uri = $"http://localhost:8080/Location/{nonExistantLocationId}";
+        string uri = $"http://localhost:8080/Locations/{nonExistantLocationId}";
 
         HttpResponseMessage response = await _client.DeleteAsync(uri);
 
@@ -84,7 +84,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
         List<LocationDto> locations = await GetLocationsAsync();
         Guid locationId = locations.Single().Id;
         await CreateDeskAsync(locationId);
-        string uri = $"http://localhost:8080/Location/{locationId}";
+        string uri = $"http://localhost:8080/Locations/{locationId}";
         
         HttpResponseMessage response = await _client.DeleteAsync(uri);
 
@@ -99,7 +99,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
     {
         List<LocationDto> locations = await GetLocationsAsync();
         Guid locationId = locations.Single().Id;
-        string uri = $"http://localhost:8080/Location/{locationId}";
+        string uri = $"http://localhost:8080/Locations/{locationId}";
 
         HttpResponseMessage response = await _client.DeleteAsync(uri);
 
@@ -110,7 +110,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
 
     private async Task<List<LocationDto>> GetLocationsAsync()
     {
-        string uri = "http://localhost:8080/Location";
+        string uri = "http://localhost:8080/Locations";
         HttpResponseMessage getResponse = await _client.GetAsync(uri);
         List<LocationDto> locations = await getResponse.Content.ReadFromJsonAsync<List<LocationDto>>()
             ?? throw new Exception("Unable to parse the response into List of Location");
@@ -120,7 +120,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
 
     private async Task<List<DeskDto>> GetDesksForLocationAsync(Guid locationId)
     {
-        string uri = $"http://localhost:8080/Location/{locationId}/Desk";
+        string uri = $"http://localhost:8080/Locations/{locationId}/Desks";
         HttpResponseMessage getResponse = await _client.GetAsync(uri);
         List<DeskDto> desks = await getResponse.Content.ReadFromJsonAsync<List<DeskDto>>()
             ?? throw new Exception("Unable to parse the response into List of Location");
@@ -130,7 +130,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
 
     private async Task CreateDeskAsync(Guid locationId)
     {
-        string uri = $"http://localhost:8080/Location/{locationId}/Desk";
+        string uri = $"http://localhost:8080/Locations/{locationId}/Desks";
         FormUrlEncodedContent form = new([]);
         await _client.PostAsync(uri, form);
     }
@@ -140,7 +140,7 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
         List<DeskDto> desks = await GetDesksForLocationAsync(locationId);
         foreach(DeskDto desk in desks)
         {
-            string uri = $"http://localhost:8080/Location/{locationId}/Desk/{desk.Id}";
+            string uri = $"http://localhost:8080/Locations/{locationId}/Desks/{desk.Id}";
             await _client.DeleteAsync(uri);
         }
     }

@@ -17,7 +17,7 @@ public class LocationController : Controller
     }
 
     [HttpGet]
-    [Route("/Location")]
+    [Route("/Locations")]
     public async Task<IActionResult> GetAll()
     {
         List<Location> locations = await _locationRepository.GetAsync();
@@ -28,7 +28,7 @@ public class LocationController : Controller
     }
 
     [HttpPost]
-    [Route("/Location")]
+    [Route("/Locations")]
     public async Task<IActionResult> Add(AddLocationModel input)
     {
         ValidationResult result = await _addValidator.ValidateAsync(input);
@@ -43,7 +43,7 @@ public class LocationController : Controller
     }
 
     [HttpDelete]
-    [Route("/Location/{id}")]
+    [Route("/Locations/{id}")]
     public async Task<IActionResult> Remove(Guid id)
     {
         Location? location = await _locationRepository.GetByIdAsync(id);
