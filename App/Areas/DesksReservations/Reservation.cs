@@ -15,4 +15,12 @@ public class Reservation
         StartDate = startDate;
         EndDate = endDate;
     }
+
+    // EF
+    private Reservation()
+    {
+        Id = default!;
+        StartDate = default!;
+        EndDate = default!;
+    }
 }

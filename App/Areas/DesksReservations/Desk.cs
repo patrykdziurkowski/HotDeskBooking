@@ -43,6 +43,14 @@ public class Desk : AggreggateRoot
         : this(Guid.NewGuid(), locationId)
     { }
 
+    // EF
+    private Desk()
+    {
+        Id = default!;
+        LocationId = default!;
+        _isMadeUnavailable = default!;
+    }
+
     public bool IsAvailable(DateOnly currentDate)
     {
         if (IsMadeUnavailable)
