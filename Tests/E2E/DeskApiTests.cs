@@ -153,7 +153,7 @@ public class DeskApiTests : IClassFixture<WebServerHostService>, IClassFixture<D
         string uri = $"http://localhost:8080/Locations/{_shared.LocationId}/Desks";
         HttpResponseMessage getResponse = await _client.GetAsync(uri);
         List<DeskDto> desks = await getResponse.Content.ReadFromJsonAsync<List<DeskDto>>()
-            ?? throw new Exception("Unable to parse the response into List of Location");
+            ?? throw new Exception("Unable to parse the response");
  
         return desks;
     }
@@ -177,7 +177,7 @@ public class DeskApiTests : IClassFixture<WebServerHostService>, IClassFixture<D
         string uri = "http://localhost:8080/Locations";
         HttpResponseMessage getResponse = await _client.GetAsync(uri);
         List<LocationDto> locations = await getResponse.Content.ReadFromJsonAsync<List<LocationDto>>()
-            ?? throw new Exception("Unable to parse the response into List of Location");
+            ?? throw new Exception("Unable to parse the response into");
  
         return locations;
     }
