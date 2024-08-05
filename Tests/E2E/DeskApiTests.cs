@@ -145,8 +145,46 @@ public class DeskApiTests : IClassFixture<WebServerHostService>, IClassFixture<D
         _shared.DeskId = null;
     }
 
+    [Fact, Priority(45)]
+    public async Task DeleteDesk_DoesntRemoveDesk_WhenHasReservation()
+    {
+        _shared.LocationId = await CreateLocationAsync();
+        _shared.DeskId = await CreateDeskAsync();
+        await CreateReservationForDeskAsync();
+        string uri = $"http://localhost:8080/Locations/{_shared.LocationId}/Desks/{_shared.DeskId}";
+
+        HttpResponseMessage response = await _client.DeleteAsync(uri);
+
+        ((int) response.StatusCode).Should().Be(403);
+        List<DeskDto> desks = await GetDesksForLocationAsync();
+        desks.Should().HaveCount(1);
+    }
 
 
+
+    private async Task CreateReservationForDeskAsync()
+    {
+        string uri = $"http://localhost:8080/Locations/{_shared.LocationId}/Desks/{_shared.DeskId}/Reservation";
+        DateOnly reservationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(6));
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("DeskId", _shared.DeskId!.ToString()!),
+            new KeyValuePair<string, string>("StartDate", reservationDate.ToString()),
+            new KeyValuePair<string, string>("EndDate", reservationDate.ToString())
+        ]);
+        
+        await _client.PostAsync(uri, form);
+    }
+
+    private async Task<Guid> CreateDeskAsync()
+    {
+        string uri = $"http://localhost:8080/Locations/{_shared.LocationId}/Desks";
+        FormUrlEncodedContent form = new([]);
+
+        await _client.PostAsync(uri, form);
+
+        List<DeskDto> desks = await GetDesksForLocationAsync();
+        return desks.Single().Id;
+    }
 
     private async Task<List<DeskDto>> GetDesksForLocationAsync()
     {
@@ -169,7 +207,7 @@ public class DeskApiTests : IClassFixture<WebServerHostService>, IClassFixture<D
 
         await _client.PostAsync(uri, form);
 
-        return (await GetLocationsAsync()).Single().Id;
+        return (await GetLocationsAsync()).First(l => l.Id != _shared.LocationId).Id;
     }
 
     private async Task<List<LocationDto>> GetLocationsAsync()
