@@ -14,19 +14,25 @@ public class DeskRepository : IDeskRepository
 
     public async Task<List<Desk>> GetAsync()
     {
-        return await _dbContext.Desks.ToListAsync();
+        return await _dbContext.Desks
+            .Include(d => d.Reservation)
+            .ToListAsync();
     }
 
     public async Task<Desk?> GetByIdAsync(Guid id)
     {
         return await _dbContext.Desks
-            .Where(d => d.Id == id).FirstOrDefaultAsync();
+            .Include(d => d.Reservation)
+            .Where(d => d.Id == id)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<List<Desk>> GetByLocationAsync(Guid locationId)
     {
         return await _dbContext.Desks
-            .Where(d => d.LocationId == locationId).ToListAsync();
+            .Include(d => d.Reservation)
+            .Where(d => d.LocationId == locationId)
+            .ToListAsync();
     }
 
     public async Task SaveAsync(Desk desk)
