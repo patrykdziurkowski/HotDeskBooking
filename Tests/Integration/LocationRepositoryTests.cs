@@ -22,6 +22,48 @@ public class LocationRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetAsync_ShouldReturnAllLocations_WhenTwoAreInserted()
+    {
+        Location location = new(1, 2);
+        Location location2 = new(2, 3);
+        await _locationRepository.SaveAsync(location);
+        await _locationRepository.SaveAsync(location2);
+
+        List<Location> locations = await _locationRepository.GetAsync();
+
+        locations.Should().HaveCount(2);
+        locations[0].Id.Should().Be(location.Id);
+        locations[1].Id.Should().Be(location2.Id);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnTheDesiredLocation_WhenTwoAreInserted()
+    {
+        Location location = new(1, 2);
+        Location location2 = new(2, 3);
+        await _locationRepository.SaveAsync(location);
+        await _locationRepository.SaveAsync(location2);
+
+        Location? selectedLocation = await _locationRepository.GetByIdAsync(location2.Id);
+
+        selectedLocation.Should().NotBeNull();
+        selectedLocation!.Id.Should().Be(location2.Id);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnNull_WhenSelectingNonExistantLocation()
+    {
+        Location location = new(1, 2);
+        Location location2 = new(2, 3);
+        await _locationRepository.SaveAsync(location);
+        await _locationRepository.SaveAsync(location2);
+
+        Location? selectedLocation = await _locationRepository.GetByIdAsync(Guid.NewGuid());
+
+        selectedLocation.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Save_ShouldConsumeDomainEvents_WhenLocationHasSome()
     {
         Location location = new(1, 2);

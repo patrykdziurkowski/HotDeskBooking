@@ -32,7 +32,7 @@ public class LocationRepository : ILocationRepository
             {
                 await _context.Locations.AddAsync(location);
             }
-            if (e is LocationRemovedEvent)
+            else if (e is LocationRemovedEvent)
             {
                 _context.Locations.Remove(location);
             }
