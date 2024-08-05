@@ -7,6 +7,8 @@ namespace App.Areas.Identity.Data;
 public class ApplicationDbContext : IdentityDbContext<Employee>
 {
     public DbSet<Location> Locations { get; set; }
+    public DbSet<Desk> Desks { get; set; }
+    public DbSet<Reservation> Reservations { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -25,11 +27,37 @@ public class ApplicationDbContext : IdentityDbContext<Employee>
         builder.Entity<Location>(location =>
         {
             location.HasKey(l => l.Id);
-            location
-                .Property(l => l.BuildingNumber)
+            location.Property(l => l.BuildingNumber)
                 .IsRequired();
-            location
-                .Property(l => l.Floor)
+            location.Property(l => l.Floor)
+                .IsRequired();
+        });
+
+        builder.Entity<Desk>(desk =>
+        {
+            desk.HasKey(d => d.Id);
+            desk.Property(d => d.IsMadeUnavailable)
+                .IsRequired();
+            desk.Property(d => d.LocationId)
+                .IsRequired();
+            
+            desk.HasOne<Location>()
+                .WithMany()
+                .HasForeignKey(d => d.LocationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            desk.HasOne(d => d.Reservation)
+                .WithOne()
+                .HasForeignKey<Desk>(d => d.ReservationId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<Reservation>(reservation =>
+        {
+            reservation.HasKey(r => r.Id);
+            reservation.Property(r => r.StartDate)
+                .IsRequired();
+            reservation.Property(r => r.EndDate)
                 .IsRequired();
         });
     }

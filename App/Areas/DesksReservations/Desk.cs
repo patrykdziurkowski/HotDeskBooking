@@ -16,6 +16,7 @@ public class Desk : AggreggateRoot
     }
     private bool _isMadeUnavailable;
     public Guid LocationId { get; }
+    public Guid? ReservationId { get; }
     public Reservation? Reservation
     {
         get => _reservation; 
