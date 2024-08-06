@@ -32,6 +32,24 @@ public class DeskController : Controller
         return Ok(deskDtos);
     }
 
+    [HttpGet]
+    [Route("/Locations/{locationId}/Desks/Available")]
+    public async Task<IActionResult> GetAvailable(Guid locationId)
+    {
+        Location? location = await _locationRepository.GetByIdAsync(locationId);
+        if (location is null)
+        {
+            return NotFound();
+        }
+
+        List<Desk> desks =  (await _deskRepository
+            .GetByLocationAsync(locationId))
+            .Where(d => d.IsAvailable(DateOnly.FromDateTime(DateTime.Now)))
+            .ToList();
+        List<DeskDto> deskDtos = desks.Select(d => DeskDto.FromDesk(d)).ToList();
+        return Ok(deskDtos);
+    }
+
     [HttpPost]
     [Route("/Locations/{locationId}/Desks")]
     public async Task<IActionResult> Create(Guid locationId)

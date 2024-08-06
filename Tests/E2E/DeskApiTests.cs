@@ -2,6 +2,7 @@
 using App;
 using App.Migrations;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http.Connections;
 using Xunit.Priority;
 
 namespace Tests;
@@ -158,6 +159,18 @@ public class DeskApiTests : IClassFixture<WebServerHostService>, IClassFixture<D
         ((int) response.StatusCode).Should().Be(403);
         List<DeskDto> desks = await GetDesksForLocationAsync();
         desks.Should().HaveCount(1);
+    }
+
+    [Fact, Priority(50)]
+    public async Task GetAvailable_DoesntShowReservedDesk_WhenHasReservation()
+    {
+        string uri = $"http://localhost:8080/Locations/{_shared.LocationId}/Desks/Available";
+
+        HttpResponseMessage response = await _client.GetAsync(uri);
+
+        ((int) response.StatusCode).Should().Be(200);
+        List<DeskDto>? availableDesks = await response.Content.ReadFromJsonAsync<List<DeskDto>>();
+        availableDesks.Should().BeEmpty();
     }
 
 
