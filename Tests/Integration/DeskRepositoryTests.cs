@@ -2,7 +2,9 @@
 using App.Areas.DesksReservations;
 using App.Areas.Identity.Data;
 using App.Areas.Locations;
+using Ductus.FluentDocker.Common;
 using FluentAssertions;
+using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -179,9 +181,32 @@ public class DeskRepositoryTests : IAsyncLifetime
         affectedDesk.IsMadeUnavailable.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task SaveAsync_PersistsTwoDeskChanges_WhenTransferredReservation()
+    {
+        Guid locationId = await InsertLocation();
+        Desk oldDesk = new(locationId);
+        Desk newDesk = new(locationId);
+        DateOnly currentDate = new(2018, 6, 13);
+        DateOnly reservationDate = currentDate.AddDays(5);
+        oldDesk.Reserve(reservationDate, currentDate);
+        ReservationDeskChangeService service = new();
+
+        Result result = service.ChangeDesk(oldDesk, newDesk, currentDate);
+        await _deskRepository.SaveAsync([oldDesk, newDesk]);
+
+        result.IsSuccess.Should().BeTrue();
+        Desk previousDesk = (await _deskRepository.GetByIdAsync(oldDesk.Id))!;
+        Desk latterDesk = (await _deskRepository.GetByIdAsync(newDesk.Id))!;
+        previousDesk.Reservation.Should().BeNull();
+        previousDesk.ReservationId.Should().BeNull();
+        latterDesk.Reservation.Should().NotBeNull();
+        latterDesk.Reservation!.StartDate.Should().Be(reservationDate);
+    }
+
     public async Task InitializeAsync()
     {
-        await Task.Run(() => {});
+        await ClearLocationsTableAsync();
     }
 
     public async Task DisposeAsync()

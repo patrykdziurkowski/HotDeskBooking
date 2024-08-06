@@ -35,7 +35,22 @@ public class DeskRepository : IDeskRepository
             .ToListAsync();
     }
 
+    public async Task SaveAsync(List<Desk> desks)
+    {
+        foreach (Desk desk in desks)
+        {
+            await HandleDomainEvents(desk);
+            desk.ClearDomainEvents();
+        }
+        await _dbContext.SaveChangesAsync();
+    }
+
     public async Task SaveAsync(Desk desk)
+    {
+        await SaveAsync([desk]);
+    }
+
+    private async Task HandleDomainEvents(Desk desk)
     {
         foreach (DomainEvent e in desk.DomainEvents)
         {
@@ -53,8 +68,5 @@ public class DeskRepository : IDeskRepository
                 _dbContext.Desks.Remove(desk);
             }
         }
-        
-        await _dbContext.SaveChangesAsync();
-        desk.ClearDomainEvents();
     }
 }
