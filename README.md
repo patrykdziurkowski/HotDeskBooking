@@ -1,7 +1,8 @@
 # HotDeskBooking
 ## Setup
-1. Set required variables:
-    - Set the following environment variables in a `.env/` file at the project's root:
+1. Make sure you have Docker installed and running.
+2. Set required variables:
+    - Set the following environment variables in a `.env` file at the project's root:
         - `SA_PASSWORD` - an environment variable required for running docker compose. This is the password of the MSSQL database admin.
         - `ASPNETCORE_ENVIRONMENT` - an environment variable used for running docker compose. This denotes the current environment. Consider setting this to "Development" by default.
         - `PRIVATE_KEY` - an environment variable used for running docker compose. This is used to generate and validate Jwt tokens used for Api authentication.
@@ -10,4 +11,4 @@
         - `PrivateKey` - this is used to generate and validate Jwt tokens used for Api authentication.
     - Set the following test User Secret variables for `Tests.csproj`:
         - `SA_PASSWORD` - this is the MSSQL database admin password for the database container used for integration testing. Must match the password found in the connection string above.
-2. Run `docker compose up` from within the project root.
+3. Run `docker compose up` from within the project root.
