@@ -53,6 +53,7 @@ public class DeskController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles="Administrator")]
     [Route("/Locations/{locationId}/Desks")]
     public async Task<IActionResult> Create(Guid locationId)
     {
@@ -68,6 +69,7 @@ public class DeskController : Controller
     }
 
     [HttpDelete]
+    [Authorize(Roles="Administrator")]
     [Route("/Locations/{locationId}/Desks/{deskId}")]
     public async Task<IActionResult> Remove(
         Guid locationId,
@@ -98,6 +100,7 @@ public class DeskController : Controller
     }
 
     [HttpPatch]
+    [Authorize(Roles="Administrator")]
     [Route("/Locations/{locationId}/Desks/{deskId}")]
     public async Task<IActionResult> MakeUnavailable(
         Guid locationId,

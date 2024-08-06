@@ -30,6 +30,7 @@ public class LocationController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles="Administrator")]
     [Route("/Locations")]
     public async Task<IActionResult> Add(AddLocationModel input)
     {
@@ -45,6 +46,7 @@ public class LocationController : Controller
     }
 
     [HttpDelete]
+    [Authorize(Roles="Administrator")]
     [Route("/Locations/{id}")]
     public async Task<IActionResult> Remove(Guid id)
     {
