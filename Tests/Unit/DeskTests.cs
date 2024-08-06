@@ -207,4 +207,19 @@ public class DeskTests
         result.IsSuccess.Should().BeTrue();
         desk.DomainEvents.Should().HaveCount(2);
     }
+
+    [Fact]
+    public void CancelReservation_ShouldRemoveExistingReservation_WhenItExists()
+    {
+        Desk desk = new(Guid.NewGuid());
+        DateOnly currentDate = new(2018, 6, 13);
+        DateOnly reservationDate = currentDate.AddDays(5);
+        desk.Reserve(reservationDate, currentDate);
+
+        desk.CancelReservation();
+
+        desk.DomainEvents.Should().HaveCount(3);
+        desk.Reservation.Should().BeNull();
+        desk.ReservationId.Should().BeNull();
+    }
 }

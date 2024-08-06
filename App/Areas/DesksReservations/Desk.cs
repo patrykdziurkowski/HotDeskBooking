@@ -96,6 +96,12 @@ public class Desk : AggreggateRoot
     {
         return Reserve(startDate, startDate, currentDate);
     }
+    
+    public void CancelReservation()
+    {
+        _reservation = null;
+        RaiseDomainEvent(new DeskCanceledReservationEvent());
+    }
 
     public Result Remove(DateOnly currentDate)
     {
