@@ -7,7 +7,7 @@ namespace Tests;
 [Collection("WebServerTests")]
 public class AuthenticationApiTests : IClassFixture<WebServerHostService>
 {
-    private static readonly HttpClient _client = new(new HttpClientHandler() { CookieContainer = new System.Net.CookieContainer() });
+    private static readonly HttpClient _client = new();
     private readonly WebServerHostService _hostService;
 
     public AuthenticationApiTests(

@@ -1,9 +1,11 @@
 ﻿using App.Areas.Locations;
 using FluentResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace App;
 
+[Authorize]
 public class DeskController : Controller
 {
     private readonly IDeskRepository _deskRepository;

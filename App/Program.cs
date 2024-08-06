@@ -14,10 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IDeskRepository, DeskRepository>();
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 var connectionString = builder.Configuration["ConnectionString"]
     ?? throw new InvalidOperationException("Connection string not found.");
-var key = Encoding.ASCII.GetBytes(builder.Configuration["PrivateKey"]
+var key = Encoding.UTF8.GetBytes(builder.Configuration["PrivateKey"]
     ?? throw new InvalidOperationException("Couldn't find the Private key used for Jwt token generation."));
 
 builder.Services
@@ -25,29 +26,26 @@ builder.Services
         options.UseSqlServer(connectionString));
 builder.Services
     .AddDefaultIdentity<Employee>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-})
-.AddCookie(options =>
-{
-    options.LoginPath = "/Account/Login";
-    options.AccessDeniedPath = "/Account/Login";
 })
 .AddJwtBearer(o =>
 {
+    o.RequireHttpsMetadata = false;
+    o.SaveToken = true;
     o.TokenValidationParameters = new()
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = "HotDeskBookingApp",
-        ValidAudience = "HotDeskBookingApp",
+        ValidIssuer = "HotDeskBooking",
+        ValidAudience = "HotDeskBooking",
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
@@ -95,6 +93,23 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    RoleManager<IdentityRole> roleManager = scope.ServiceProvider
+        .GetRequiredService<RoleManager<IdentityRole>>();
+    string[] roles = ["Administrator", "Employee"];
+    foreach (string role in roles)
+    {
+        if (await roleManager.RoleExistsAsync(role) == false)
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+}
+
+
 app.Run();
 
 public partial class Program { }

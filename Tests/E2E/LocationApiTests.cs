@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using App;
 using App.Areas.Locations;
 using FluentAssertions;
@@ -12,7 +13,7 @@ namespace Tests;
 [Collection("WebServerTests")]
 public class LocationApiTests : IClassFixture<WebServerHostService>
 {
-    private static readonly HttpClient _client = new(new HttpClientHandler() { CookieContainer = new System.Net.CookieContainer() });
+    private static readonly HttpClient _client = new();
     private readonly WebServerHostService _hostService;
 
     public LocationApiTests(WebServerHostService hostService)
@@ -23,6 +24,8 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
     [Fact, Priority(0)]
     public async Task GetLocation_ReturnsOk()
     {
+        await Register();
+        await Login();
         string uri = "http://localhost:8080/Locations";
         
         HttpResponseMessage response = await _client.GetAsync(uri);
@@ -143,5 +146,30 @@ public class LocationApiTests : IClassFixture<WebServerHostService>
             string uri = $"http://localhost:8080/Locations/{locationId}/Desks/{desk.Id}";
             await _client.DeleteAsync(uri);
         }
+    }
+
+    private async Task Register()
+    {
+        string uri = $"http://localhost:8080/Tokens/Register";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("firstName", "John"),
+            new KeyValuePair<string, string>("lastName", "Smith"),
+            new KeyValuePair<string, string>("userName", "JohnSmith"),
+            new KeyValuePair<string, string>("email", "john@smith.com"),
+            new KeyValuePair<string, string>("password", "P@ssword1!")
+        ]);
+        await _client.PostAsync(uri, form);
+    }
+
+    private async Task Login()
+    {
+         string uri = $"http://localhost:8080/Tokens/Login";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("email", "john@smith.com"),
+            new KeyValuePair<string, string>("password", "P@ssword1!")
+        ]);
+        HttpResponseMessage response = await _client.PostAsync(uri, form);
+        string token = await response.Content.ReadAsStringAsync();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 }

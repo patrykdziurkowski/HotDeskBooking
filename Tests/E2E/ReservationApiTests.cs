@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using App;
 using FluentAssertions;
 using Xunit.Priority;
@@ -9,7 +10,7 @@ namespace Tests;
 [Collection("WebServerTests")]
 public class ReservationApiTests : IClassFixture<WebServerHostService>, IClassFixture<ReservationApiTestsShared>
 {
-    private static readonly HttpClient _client = new(new HttpClientHandler() { CookieContainer = new System.Net.CookieContainer() });
+    private static readonly HttpClient _client = new();
     private readonly WebServerHostService _hostService;
     private readonly ReservationApiTestsShared _shared;
 
@@ -24,6 +25,8 @@ public class ReservationApiTests : IClassFixture<WebServerHostService>, IClassFi
     [Fact, Priority(-3)]
     public async Task GetReservation_ReturnsNotFound_WhenLocationDoesntExist()
     {
+        await Register();
+        await Login();
         _shared.LocationId = await CreateLocationAsync();
         _shared.DeskId = (await CreateDeskForLocationAsync()).Id;
         string uri = $"http://localhost:8080/Locations/{Guid.NewGuid()}/Desks/{_shared.DeskId}/Reservation";
@@ -295,5 +298,30 @@ public class ReservationApiTests : IClassFixture<WebServerHostService>, IClassFi
             ?? throw new Exception("Unable to parse the response");
  
         return locations;
+    }
+
+    private async Task Register()
+    {
+        string uri = $"http://localhost:8080/Tokens/Register";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("firstName", "John"),
+            new KeyValuePair<string, string>("lastName", "Smith"),
+            new KeyValuePair<string, string>("userName", "JohnSmith"),
+            new KeyValuePair<string, string>("email", "john@smith.com"),
+            new KeyValuePair<string, string>("password", "P@ssword1!")
+        ]);
+        await _client.PostAsync(uri, form);
+    }
+
+    private async Task Login()
+    {
+         string uri = $"http://localhost:8080/Tokens/Login";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("email", "john@smith.com"),
+            new KeyValuePair<string, string>("password", "P@ssword1!")
+        ]);
+        HttpResponseMessage response = await _client.PostAsync(uri, form);
+        string token = await response.Content.ReadAsStringAsync();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 }

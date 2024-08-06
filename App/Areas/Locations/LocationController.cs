@@ -2,10 +2,12 @@
 using App.Areas.Locations;
 using FluentResults;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace App;
 
+[Authorize]
 public class LocationController : Controller
 {
     private ILocationRepository _locationRepository;

@@ -40,6 +40,14 @@ public class AuthenticationController : Controller
         {
             return StatusCode(403, result.Errors.First().Description);
         }
+        await _userManager.AddClaimsAsync(employee, [
+            new(ClaimTypes.NameIdentifier, employee.Id.ToString()),
+            new(ClaimTypes.Name, employee.UserName!),
+            new(ClaimTypes.Email, employee.Email!),
+            new(ClaimTypes.Role, "Employee"),
+            new(ClaimTypes.Role, "Administrator")
+        ]);
+
         return StatusCode(201);
     }
 
@@ -59,16 +67,17 @@ public class AuthenticationController : Controller
         }
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["PrivateKey"]!);
+        var key = Encoding.UTF8.GetBytes(_configuration["PrivateKey"]!);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(await _userManager.GetClaimsAsync(employee)),
             Expires = DateTime.UtcNow.AddDays(7),
+            Issuer = "HotDeskBooking",
+            Audience = "HotDeskBooking",
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
-
-        return Ok(new { Token = tokenString });
+        return Ok(tokenString);
     }
 }
