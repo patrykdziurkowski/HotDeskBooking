@@ -6,6 +6,7 @@ namespace App.Areas.Identity.Data;
 
 public class ApplicationDbContext : IdentityDbContext<Employee>
 {
+    public DbSet<Employee> Employees { get; set; }
     public DbSet<Location> Locations { get; set; }
     public DbSet<Desk> Desks { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
@@ -24,6 +25,11 @@ public class ApplicationDbContext : IdentityDbContext<Employee>
 
         builder.Ignore<AggreggateRoot>();
         builder.Ignore<DomainEvent>();
+
+        builder.Entity<Employee>(employee =>
+        {
+        
+        });
         builder.Entity<Location>(location =>
         {
             location.HasKey(l => l.Id);

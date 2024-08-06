@@ -12,6 +12,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ConnectionString=Data Source=database,1433;User ID=SA;Password=${SA_PASSWORD};Encrypt=False
+      - PrivateKey=${PRIVATE_KEY}
     depends_on:
         database:
             condition: service_healthy

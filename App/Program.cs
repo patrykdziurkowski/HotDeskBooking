@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using App;
 using App.Areas.DesksReservations;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,12 +17,40 @@ builder.Services.AddScoped<IDeskRepository, DeskRepository>();
 
 var connectionString = builder.Configuration["ConnectionString"]
     ?? throw new InvalidOperationException("Connection string not found.");
+var key = Encoding.ASCII.GetBytes(builder.Configuration["PrivateKey"]
+    ?? throw new InvalidOperationException("Couldn't find the Private key used for Jwt token generation."));
+
 builder.Services
     .AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(connectionString));
 builder.Services
-    .AddDefaultIdentity<Employee>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddDefaultIdentity<Employee>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddAuthentication(o =>
+{
+    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/Login";
+})
+.AddJwtBearer(o =>
+{
+    o.TokenValidationParameters = new()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "HotDeskBookingApp",
+        ValidAudience = "HotDeskBookingApp",
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
 
 builder.Services.AddControllersWithViews(o => o.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>());
 builder.Services.Configure<RazorViewEngineOptions>(o => {
@@ -56,6 +88,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

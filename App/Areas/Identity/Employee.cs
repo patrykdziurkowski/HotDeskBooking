@@ -7,10 +7,15 @@ public class Employee : IdentityUser
     public string FirstName { get; }
     public string LastName { get; }
 
-    public Employee(string firstName, string lastName)
+    public Employee(
+        string firstName,
+        string lastName,
+        string userName,
+        string email) : base(userName)
     {
         FirstName = firstName;
         LastName = lastName;
+        Email = email;
     }
 
     // EFCore default constructor
@@ -18,5 +23,7 @@ public class Employee : IdentityUser
     {
         FirstName = default!;
         LastName = default!;
+        UserName = default!;
+        Email = default!;
     }
 }
