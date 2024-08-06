@@ -58,11 +58,12 @@ public class DeskTests
     [Fact]
     public void IsAvailable_ShouldReturnFalse_WhenDeskHasPendingReservation()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly date = new(2018, 6, 24);
 
-        desk.Reserve(date, currentDate);
+        desk.Reserve(date, currentDate, employeeId);
 
         desk.IsAvailable(currentDate).Should().BeFalse();
     }
@@ -70,12 +71,16 @@ public class DeskTests
     [Fact]
     public void IsAvailable_ShouldReturnTrue_WhenPreviousReservationExpired()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly firstReservationDate = new(2018, 6, 13);
         DateOnly firstReservationStartDate = new(2018, 6, 20);
         DateOnly currentDate = new(2018, 6, 21);
 
-        desk.Reserve(firstReservationStartDate, firstReservationDate);
+        desk.Reserve(
+            firstReservationStartDate, 
+            firstReservationDate, 
+            employeeId);
 
         desk.IsAvailable(currentDate).Should().BeTrue();
     }
@@ -83,10 +88,11 @@ public class DeskTests
     [Fact]
     public void Reserve_ShouldRaiseDomainEvent_WhenDeskBooked()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly date = new(2018, 6, 24);
-        desk.Reserve(date, currentDate);
+        desk.Reserve(date, currentDate, employeeId);
 
         desk.DomainEvents.Should().HaveCount(2);
     }
@@ -94,24 +100,30 @@ public class DeskTests
     [Fact]
     public void Reserve_ShouldReturnFail_WhenDeskIsNotAvailable()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly date = new(2018, 6, 24);
-        desk.Reserve(date, currentDate);
+        desk.Reserve(date, currentDate, employeeId);
 
-        Result result = desk.Reserve(date, currentDate);
+        Result result = desk.Reserve(date, currentDate, employeeId);
         result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
     public void Reserve_ShouldReturnOk_WhenBooking7Days()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly startDate = new(2018, 6, 20);
         DateOnly endDate = new(2018, 6, 26);
 
-        Result result = desk.Reserve(startDate, endDate, currentDate);
+        Result result = desk.Reserve(
+            startDate, 
+            endDate, 
+            currentDate,
+            employeeId);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -119,12 +131,17 @@ public class DeskTests
     [Fact]
     public void Reserve_ShouldReturnFail_WhenBooking8Days()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly startDate = new(2018, 6, 20);
         DateOnly endDate = new(2018, 6, 27);
 
-        Result result = desk.Reserve(startDate, endDate, currentDate);
+        Result result = desk.Reserve(
+            startDate,
+            endDate,
+            currentDate,
+            employeeId);
 
         result.IsFailed.Should().BeTrue();
     }
@@ -132,12 +149,17 @@ public class DeskTests
     [Fact]
     public void Reserve_ShouldReturnFail_WhenEndDateBeforeStartDate()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly startDate = new(2018, 6, 20);
         DateOnly endDate = new(2018, 6, 19);
 
-        Result result = desk.Reserve(startDate, endDate, currentDate);
+        Result result = desk.Reserve(
+            startDate, 
+            endDate, 
+            currentDate,
+            employeeId);
 
         result.IsFailed.Should().BeTrue();
     }
@@ -145,11 +167,15 @@ public class DeskTests
     [Fact]
     public void Reserve_ShouldReturnOk_WhenBookingForADay()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly startDate = new(2018, 6, 20);
 
-        Result result = desk.Reserve(startDate, currentDate);
+        Result result = desk.Reserve(
+            startDate,
+            currentDate,
+            employeeId);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -157,11 +183,15 @@ public class DeskTests
     [Fact]
     public void Reserve_ShouldReturnFail_WhenMakingReservationForThePast()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 21);
         DateOnly startDate = new(2018, 6, 20);
 
-        Result result = desk.Reserve(startDate, currentDate);
+        Result result = desk.Reserve(
+            startDate, 
+            currentDate,
+            employeeId);
 
         result.IsFailed.Should().BeTrue();
     }
@@ -169,6 +199,7 @@ public class DeskTests
     [Fact]
     public void Reserve_ShouldReturnOk_WhenPreviousReservationExpired()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly firstReservationDate = new(2018, 6, 13);
         DateOnly firstReservationStartDate = new(2018, 6, 20);
@@ -176,8 +207,14 @@ public class DeskTests
         DateOnly secondReservationDate = new(2018, 6, 21);
         DateOnly secondReservationStartDate = new(2018, 6, 22);
 
-        desk.Reserve(firstReservationStartDate, firstReservationDate);
-        Result result = desk.Reserve(secondReservationStartDate, secondReservationDate);
+        desk.Reserve(
+            firstReservationStartDate, 
+            firstReservationDate,
+            employeeId);
+        Result result = desk.Reserve(
+            secondReservationStartDate, 
+            secondReservationDate,
+            employeeId);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -185,10 +222,11 @@ public class DeskTests
     [Fact]
     public void Remove_ShouldReturnFail_WhenDeskHasNonExpiredReservation()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly startDate = new(2018, 6, 20);
-        desk.Reserve(startDate, currentDate);
+        desk.Reserve(startDate, currentDate, employeeId);
 
         Result result = desk.Remove(currentDate);
 
@@ -211,10 +249,11 @@ public class DeskTests
     [Fact]
     public void CancelReservation_ShouldRemoveExistingReservation_WhenItExists()
     {
+        Guid employeeId = Guid.NewGuid();
         Desk desk = new(Guid.NewGuid());
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly reservationDate = currentDate.AddDays(5);
-        desk.Reserve(reservationDate, currentDate);
+        desk.Reserve(reservationDate, currentDate, employeeId);
 
         desk.CancelReservation();
 

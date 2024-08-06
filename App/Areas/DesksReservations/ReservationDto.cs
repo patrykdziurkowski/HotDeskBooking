@@ -5,6 +5,7 @@ public class ReservationDto
     public Guid Id { get; set; }
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
+    public Guid? EmployeeId { get; set; }
 
     public static ReservationDto? FromReservation(Reservation? reservation)
     {
@@ -17,7 +18,8 @@ public class ReservationDto
         {
             Id = reservation.Id,
             StartDate = reservation.StartDate,
-            EndDate = reservation.EndDate
+            EndDate = reservation.EndDate,
+            EmployeeId = reservation.EmployeeId
         };
     }
 }

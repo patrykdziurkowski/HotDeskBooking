@@ -2,7 +2,7 @@
 
 namespace App;
 
-public class Employee : IdentityUser
+public class Employee : IdentityUser<Guid>
 {
     public string FirstName { get; }
     public string LastName { get; }

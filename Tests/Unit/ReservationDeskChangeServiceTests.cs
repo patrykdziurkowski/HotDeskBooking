@@ -24,6 +24,7 @@ public class ReservationDeskChangeServiceTests
     [Fact]
     public void DeskChange_ShouldFail_WhenHasReservationAndTryingToChangeItLessThan24HoursPrior()
     {
+        Guid employeeId = Guid.NewGuid();
         ReservationDeskChangeService service = new();
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly reservationDate = currentDate.AddDays(1);
@@ -32,7 +33,8 @@ public class ReservationDeskChangeServiceTests
         Desk newDesk = new(location.Id);
         oldDesk.Reserve(
             reservationDate,
-            currentDate
+            currentDate,
+            employeeId
         );
 
         Result result = service.ChangeDesk(oldDesk, newDesk, currentDate);
@@ -43,6 +45,7 @@ public class ReservationDeskChangeServiceTests
     [Fact]
     public void DeskChange_ShouldFail_WhenReservingNewDeskFailed()
     {
+        Guid employeeId = Guid.NewGuid();
         ReservationDeskChangeService service = new();
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly reservationDate = currentDate.AddDays(5);
@@ -51,11 +54,13 @@ public class ReservationDeskChangeServiceTests
         Desk newDesk = new(location.Id);
         oldDesk.Reserve(
             reservationDate,
-            currentDate
+            currentDate,
+            employeeId
         );
         newDesk.Reserve(
             reservationDate,
-            currentDate
+            currentDate,
+            employeeId
         );
 
         Result result = service.ChangeDesk(oldDesk, newDesk, currentDate);
@@ -66,6 +71,7 @@ public class ReservationDeskChangeServiceTests
     [Fact]
     public void DeskChange_ShouldRaiseDomainEvents_WhenSuccessful()
     {
+        Guid employeeId = Guid.NewGuid();
         ReservationDeskChangeService service = new();
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly reservationDate = currentDate.AddDays(5);
@@ -74,7 +80,8 @@ public class ReservationDeskChangeServiceTests
         Desk newDesk = new(location.Id);
         oldDesk.Reserve(
             reservationDate,
-            currentDate
+            currentDate,
+            employeeId
         );
 
         Result result = service.ChangeDesk(oldDesk, newDesk, currentDate);

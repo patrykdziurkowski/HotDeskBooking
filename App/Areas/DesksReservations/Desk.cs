@@ -66,7 +66,11 @@ public class Desk : AggreggateRoot
         return currentDate > Reservation.EndDate;
     }
 
-    public Result Reserve(DateOnly startDate, DateOnly endDate, DateOnly currentDate)
+    public Result Reserve(
+        DateOnly startDate, 
+        DateOnly endDate, 
+        DateOnly currentDate,
+        Guid employeeId)
     {
         if (currentDate > startDate)
         {
@@ -88,13 +92,19 @@ public class Desk : AggreggateRoot
             return Result.Fail("The chosen desk has already been booked.");
         }
 
-        Reservation = new Reservation(startDate, endDate);
+        Reservation = new Reservation(startDate, endDate, employeeId);
         return Result.Ok();
     }
 
-    public Result Reserve(DateOnly startDate, DateOnly currentDate)
+    public Result Reserve(
+        DateOnly startDate, 
+        DateOnly currentDate, 
+        Guid employeeId)
     {
-        return Reserve(startDate, startDate, currentDate);
+        return Reserve(startDate, 
+            startDate, 
+            currentDate, 
+            employeeId);
     }
     
     public void CancelReservation()

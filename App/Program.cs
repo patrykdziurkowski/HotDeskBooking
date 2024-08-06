@@ -26,7 +26,7 @@ builder.Services
         options.UseSqlServer(connectionString));
 builder.Services
     .AddDefaultIdentity<Employee>()
-    .AddRoles<IdentityRole>()
+    .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddAuthentication(o =>
@@ -97,14 +97,14 @@ app.MapRazorPages();
 
 using (IServiceScope scope = app.Services.CreateScope())
 {
-    RoleManager<IdentityRole> roleManager = scope.ServiceProvider
-        .GetRequiredService<RoleManager<IdentityRole>>();
+    RoleManager<IdentityRole<Guid>> roleManager = scope.ServiceProvider
+        .GetRequiredService<RoleManager<IdentityRole<Guid>>>();
     string[] roles = ["Administrator", "Employee"];
     foreach (string role in roles)
     {
         if (await roleManager.RoleExistsAsync(role) == false)
         {
-            await roleManager.CreateAsync(new IdentityRole(role));
+            await roleManager.CreateAsync(new IdentityRole<Guid>(role));
         }
     }
 }

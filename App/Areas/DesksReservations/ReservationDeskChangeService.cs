@@ -19,7 +19,8 @@ public class ReservationDeskChangeService
         Result result = newDesk.Reserve(
             oldDesk.Reservation.StartDate,
             oldDesk.Reservation.EndDate,
-            currentDate
+            currentDate,
+            oldDesk.Reservation.EmployeeId
         );
         if (result.IsFailed)
         {

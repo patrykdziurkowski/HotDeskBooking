@@ -1,4 +1,5 @@
-﻿using App.Areas.DesksReservations;
+﻿using System.Security.Claims;
+using App.Areas.DesksReservations;
 using App.Areas.Locations;
 using FluentResults;
 using FluentValidation.Results;
@@ -56,10 +57,17 @@ public class ReservationController : Controller
             return NotFound();
         }
 
+        Guid? employeeId = GetEmployeeId();
+        if (employeeId is null)
+        {
+            return NotFound();
+        }
+
         Result result = desk.Reserve(
             model.StartDate!.Value, 
             model.EndDate!.Value, 
-            DateOnly.FromDateTime(DateTime.Now));
+            DateOnly.FromDateTime(DateTime.Now),
+            employeeId.Value);
         if (result.IsFailed)
         {
             return StatusCode(403, result.Errors.First().Message);
@@ -102,5 +110,16 @@ public class ReservationController : Controller
         }
         await _deskRepository.SaveAsync([oldDesk, newDesk]);
         return Ok();
+    }
+
+
+    private Guid? GetEmployeeId()
+    {
+        string? identifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identifier is null)
+        {
+            return null;
+        }
+        return Guid.Parse(identifier);
     }
 }

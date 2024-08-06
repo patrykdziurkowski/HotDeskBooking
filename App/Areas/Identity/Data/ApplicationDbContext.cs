@@ -1,10 +1,11 @@
 using App.Areas.Locations;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace App.Areas.Identity.Data;
 
-public class ApplicationDbContext : IdentityDbContext<Employee>
+public class ApplicationDbContext : IdentityDbContext<Employee, IdentityRole<Guid>, Guid>
 {
     public DbSet<Employee> Employees { get; set; }
     public DbSet<Location> Locations { get; set; }
@@ -28,7 +29,7 @@ public class ApplicationDbContext : IdentityDbContext<Employee>
 
         builder.Entity<Employee>(employee =>
         {
-        
+
         });
         builder.Entity<Location>(location =>
         {
@@ -66,6 +67,11 @@ public class ApplicationDbContext : IdentityDbContext<Employee>
                 .IsRequired();
             reservation.Property(r => r.EndDate)
                 .IsRequired();
+            reservation.HasOne<Employee>()
+                .WithMany()
+                .HasForeignKey(r => r.EmployeeId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

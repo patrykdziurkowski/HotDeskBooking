@@ -138,6 +138,8 @@ public class ReservationApiTests : IClassFixture<WebServerHostService>, IClassFi
         ReservationDto reservation = (await GetReservationAsync())!;
         reservation.StartDate.Should().Be(reservationDate);
         reservation.EndDate.Should().Be(reservationDate);
+        reservation.EmployeeId.Should().NotBeNull();
+        reservation.EmployeeId.Should().NotBe(Guid.Empty);;
     }
 
     [Fact, Priority(30)]

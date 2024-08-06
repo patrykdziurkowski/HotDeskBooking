@@ -5,6 +5,7 @@ using App.Areas.Locations;
 using Ductus.FluentDocker.Common;
 using FluentAssertions;
 using FluentResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -57,7 +58,7 @@ public class DeskRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetByIdAsync_ShouldReturnNull_whenSelectingNonExistantDesk()
+    public async Task GetByIdAsync_ShouldReturnNull_WhenSelectingNonExistantDesk()
     {
         Guid locationId = await InsertLocation();
         Desk desk = new(locationId);
@@ -106,18 +107,21 @@ public class DeskRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task SaveAsync_ShouldCreateReservation_WhenReserved()
     {
+        Guid employeeId = await InsertEmployee();
         Guid locationId = await InsertLocation();
         Desk desk = new(locationId);
         await _deskRepository.SaveAsync(desk);
 
         desk.Reserve(
             new DateOnly(2018, 6, 14),
-            new DateOnly(2018, 6, 13)
+            new DateOnly(2018, 6, 13),
+            employeeId
         );
         await _deskRepository.SaveAsync(desk);
 
         Desk insertedDesk = (await _deskRepository.GetAsync()).Single();
         insertedDesk.Reservation!.StartDate.Should().Be(new DateOnly(2018, 6, 14));
+        insertedDesk.Reservation.EmployeeId.Should().Be(employeeId);
     }
 
     [Fact]
@@ -136,11 +140,13 @@ public class DeskRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task SaveAsync_ShouldNotRemoveDesk_WhenHasReservation()
     {
+        Guid employeeId = await InsertEmployee();
         Guid locationId = await InsertLocation();
         Desk desk = new(locationId);
         desk.Reserve(
             new DateOnly(2018, 6, 14),
-            new DateOnly(2018, 6, 13)
+            new DateOnly(2018, 6, 13),
+            employeeId
         );
         await _deskRepository.SaveAsync(desk);
 
@@ -184,12 +190,13 @@ public class DeskRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task SaveAsync_PersistsTwoDeskChanges_WhenTransferredReservation()
     {
+        Guid employeeId = await InsertEmployee();
         Guid locationId = await InsertLocation();
         Desk oldDesk = new(locationId);
         Desk newDesk = new(locationId);
         DateOnly currentDate = new(2018, 6, 13);
         DateOnly reservationDate = currentDate.AddDays(5);
-        oldDesk.Reserve(reservationDate, currentDate);
+        oldDesk.Reserve(reservationDate, currentDate, employeeId);
         ReservationDeskChangeService service = new();
 
         Result result = service.ChangeDesk(oldDesk, newDesk, currentDate);
@@ -220,6 +227,13 @@ public class DeskRepositoryTests : IAsyncLifetime
         await _context.Reservations.ExecuteDeleteAsync();
         await _context.Desks.ExecuteDeleteAsync();
         await _context.Locations.ExecuteDeleteAsync();
+    }
+
+    private async Task<Guid> InsertEmployee()
+    {
+        Employee employee = new("John", "Smith", "JohnSmith", "john@smith.com");
+        await _context.Employees.AddAsync(employee);
+        return employee.Id;
     }
 
     private async Task<Guid> InsertLocation()
