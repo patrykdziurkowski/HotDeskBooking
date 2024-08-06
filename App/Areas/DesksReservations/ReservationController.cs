@@ -67,4 +67,40 @@ public class ReservationController : Controller
         await _deskRepository.SaveAsync(desk);
         return Ok();
     }
+
+    [HttpPatch]
+    [Route("/Locations/{locationId}/Desks/{oldDeskId}/Reservation")]
+    public async Task<IActionResult> ChangeDesk(
+        Guid locationId,
+        Guid oldDeskId,
+        Guid newDeskId
+    )
+    {
+        Location? location = await _locationRepository.GetByIdAsync(locationId);
+        if (location is null)
+        {
+            return NotFound();
+        }
+
+        Desk? oldDesk = await _deskRepository.GetByIdAsync(oldDeskId);
+        if (oldDesk is null)
+        {
+            return NotFound();
+        }
+
+        Desk? newDesk = await _deskRepository.GetByIdAsync(newDeskId);
+        if (newDesk is null)
+        {
+            return NotFound();
+        }
+
+        ReservationDeskChangeService service = new();
+        Result result = service.ChangeDesk(oldDesk, newDesk, DateOnly.FromDateTime(DateTime.Now));
+        if (result.IsFailed)
+        {
+            return StatusCode(403, result.Errors.First().Message);
+        }
+        await _deskRepository.SaveAsync([oldDesk, newDesk]);
+        return Ok();
+    }
 }

@@ -147,7 +147,67 @@ public class ReservationApiTests : IClassFixture<WebServerHostService>, IClassFi
         ((int) response.StatusCode).Should().Be(200);
     }
 
+    [Fact, Priority(35)]
+    public async Task PatchReservation_ReturnsNotFound_WhenLocationDoesntExist()
+    {
+        _shared.AnotherDeskId = (await CreateAnotherDeskForLocationAsync()).Id;
+        string uri = $"http://localhost:8080/Locations/{Guid.NewGuid()}/Desks/{_shared.DeskId}/Reservation";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("newDeskId", _shared.AnotherDeskId!.ToString()!),
+        ]);
 
+        HttpResponseMessage response = await _client.PatchAsync(uri, form);
+
+        ((int) response.StatusCode).Should().Be(404);
+    }
+
+    [Fact, Priority(40)]
+    public async Task PatchReservation_ReturnsNotFound_WhenDeskDoesntExist()
+    {
+        string uri = $"http://localhost:8080/Locations/{_shared.LocationId}/Desks/{Guid.NewGuid()}/Reservation";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("newDeskId", _shared.AnotherDeskId!.ToString()!),
+        ]);
+
+        HttpResponseMessage response = await _client.PatchAsync(uri, form);
+
+        ((int) response.StatusCode).Should().Be(404);
+    }
+
+    [Fact, Priority(45)]
+    public async Task PatchReservation_TransfersExistingReservation()
+    {
+        string uri = $"http://localhost:8080/Locations/{_shared.LocationId}/Desks/{_shared.DeskId}/Reservation";
+        FormUrlEncodedContent form = new([
+            new KeyValuePair<string, string>("newDeskId", _shared.AnotherDeskId!.ToString()!),
+        ]);
+
+        HttpResponseMessage response = await _client.PatchAsync(uri, form);
+
+        ((int) response.StatusCode).Should().Be(200);
+        ReservationDto? reservation = await GetReservationAsync();
+        reservation.Should().BeNull();
+        ReservationDto? newDeskReservation = await GetReservationForNewDeskAsync();
+        newDeskReservation.Should().NotBeNull();
+        newDeskReservation!.StartDate.Should().Be(DateOnly.FromDateTime(DateTime.Now.AddDays(6)));
+    }
+
+
+
+
+    private async Task<ReservationDto?> GetReservationForNewDeskAsync()
+    {
+        string uri = $"http://localhost:8080/Locations/{_shared.LocationId}/Desks/{_shared.AnotherDeskId}/Reservation";
+        HttpResponseMessage getResponse = await _client.GetAsync(uri);
+        try
+        {
+            return await getResponse.Content.ReadFromJsonAsync<ReservationDto>();
+        }
+        catch(Exception)
+        {
+            return null;
+        }
+    }
 
     private async Task<ReservationDto?> GetReservationAsync()
     {
@@ -181,6 +241,16 @@ public class ReservationApiTests : IClassFixture<WebServerHostService>, IClassFi
         ]);
 
         await _client.PatchAsync(uri, form);
+    }
+
+    private async Task<DeskDto> CreateAnotherDeskForLocationAsync()
+    {
+        string uri = $"http://localhost:8080/Locations/{_shared.LocationId}/Desks";
+        FormUrlEncodedContent form = new([]);
+
+        await _client.PostAsync(uri, form);
+
+        return (await GetDesksForLocationAsync()).First(d => d.Id != _shared.DeskId);
     }
 
     private async Task<DeskDto> CreateDeskForLocationAsync()
