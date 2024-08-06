@@ -37,8 +37,20 @@ public class ReservationController : Controller
         {
             return NotFound();
         }
+
+        ReservationDto reservation = new()
+        {
+            Id = desk.Reservation.Id,
+            StartDate = desk.Reservation.StartDate,
+            EndDate = desk.Reservation.EndDate,
+            EmployeeId = null
+        };
+        if (CurrentUserIsAdministrator())
+        {
+            reservation.EmployeeId = desk.Reservation.EmployeeId;
+        }
         
-        return Ok(desk.Reservation);
+        return Ok(reservation);
     }
 
     [HttpPost]
@@ -112,6 +124,10 @@ public class ReservationController : Controller
         return Ok();
     }
 
+    private bool CurrentUserIsAdministrator()
+    {
+        return User.IsInRole("Administrator");
+    }
 
     private Guid? GetEmployeeId()
     {
